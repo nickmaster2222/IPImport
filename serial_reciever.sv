@@ -19,67 +19,15 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
-//module serial_reciever(
-//    input clk,
-//    input RX,
-//    output reg [7:0] recieved = 0,
-//    output reg data_recieved, //goes high when data is recieved
-//    input [16:0] count_for_baud_rate
-//);
-
-//    reg [9:0] shift_reg; //needs to be 10 bits long to catch all data and start/stop bits
-//    wire bus_clock;
-//    //clock_divider divider (clk, bus_clock, count_for_baud_rate, clock_sync);
-
-
-//    reg start_incoming = 1; //start bit is incoming
-//    reg [16:0] clock_count = 0;
-//    reg [4:0] count = 0;
-//    always@ (posedge clk) begin //recieving
-//        data_recieved = 0;
-//        if(RX == 0 && start_incoming) begin //set read time to halfway through signal period as this is the start bit
-//            clock_count = count_for_baud_rate / 2;
-//            start_incoming = 0;
-//            count = 0;
-//        end
-//        if(clock_count == count_for_baud_rate) begin
-//            clock_count = 0;
-//            if(!start_incoming) begin //no incoming means already going
-//                if(count == 9) begin
-//                    start_incoming = 1;
-//                    recieved = shift_reg[8:1]; //write in normal order
-//                    shift_reg = 0;
-//                    data_recieved = 1; //signal new byte is in buffer
-//                end else begin
-//                    shift_reg = shift_reg >> 1;
-//                    shift_reg[9] = RX;
-//                    count = count + 1;
-//                end
-//            end
-//        end else begin
-//            clock_count = clock_count + 1;
-//        end
-//    end
-
-//    //not ideal way of handling this, for high throughput I should instead change this to a posedge clk sensitivity list and set something up so that I can use a sycronized method of clock synching
-//    //    always@ (negedge RX) begin//syncs bus_clock everytime a start bit comes through
-//    //        if(start_incoming) begin
-//    //            clock_sync <= 1;//signal clock next clk
-//    //        end else 
-//    //            clock_sync = 0;
-//    //    end    
-
-//endmodule
-
-module serial_reciever #(parameter CLK_IN=0, parameter BAUD=0)( //no in built FIFO as of yet
+`include "fifo.sv"
+module serial_reciever #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPTH=512)(
     input clk,
     input wire RX,
     input rd_en,
     output empty,
     output full,
     output [7:0] dout,
-    output [11:0] data_count//,
+    output [8:0] data_count//,
     //input [15:0] count_for_baud //max clock division of 2^16 -1
 );
     import types::*;
@@ -89,7 +37,7 @@ module serial_reciever #(parameter CLK_IN=0, parameter BAUD=0)( //no in built FI
     reg wr_en = 0;
     u8 din = 0;
     wire valid;
-    uart_fifo fifo(
+    fifo (8, DEPTH) uart_fifo(
         .clk,
         .srst,
         .din,
