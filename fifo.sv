@@ -22,7 +22,7 @@ module fifo #(parameter WIDTH, parameter DEPTH)( //this is first word fall throu
 	always_ff @(posedge clk) begin
 		if(srst)
 			write <= 0;
-		else if(wr_en && data_count > 0) begin
+		else if(wr_en && !full) begin
 			write <= write == DEPTH-1 ? 0 : write + 1;
 			ram[write] <= din;
 		end else
