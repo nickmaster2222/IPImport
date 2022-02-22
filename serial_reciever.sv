@@ -37,7 +37,7 @@ module serial_reciever #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPTH=5
     reg wr_en = 0;
     u8 din = 0;
     wire valid;
-    fifo (8, DEPTH) uart_fifo(
+    fifo #(8, DEPTH) uart_fifo(
         .clk,
         .srst,
         .din,
