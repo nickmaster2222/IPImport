@@ -36,7 +36,7 @@ module fifo #(parameter WIDTH, parameter DEPTH)( //this is first word fall throu
 			dout <= 0;
 		end else if(rd_en && data_count > 0) begin
 			read <= read == DEPTH-1 ? 0 : read + 1;
-			dout <= ram[read == DEPTH-1 ? 0 : read + 1];//to ensure first word fall through behavior
+			dout <= ram[read == DEPTH-1 ? 0 : read + 1];//to ensure first word fall through behavior it grabs one ahead so it's ready for the next cycle
 		end else begin
 			read <= read;
 			dout <= ram[read];//ensures first word fall through
