@@ -51,7 +51,7 @@ module fifo #(parameter WIDTH, parameter DEPTH, parameter READ_PORTS=1, paramete
 	
 	logic read_bit_sum;
 	always_comb begin
-        reg [$clog2(READ_PORTS)-1:0] count = 0;
+        reg [$clog2(READ_PORTS)-1:0] count = '0;
 			foreach(rd_en[i]) begin
                 count += rd_en[i];
             end
