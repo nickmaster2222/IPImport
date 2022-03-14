@@ -37,7 +37,7 @@ module serial_transmitter #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPT
 
     wire empty;
     wire [7:0] dout;
-    wire valid;
+    wire valid;//whether the output data on the fifo is valid
     fifo #(8, DEPTH) uart_fifo(
         .clk,
         .srst,
