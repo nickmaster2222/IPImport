@@ -1,7 +1,7 @@
 import types::*;
 //generates WIDTH bits of random numbers that, in theory, change every clock cycle using a ring oscillator
 //this should be used to seed random number generators, though, not as an independant RNG due to the inherent lack of cycle to cycle randomness
-module #(WIDTH=1) ring_oscillator(
+module ring_oscillator #(WIDTH=1)(
     input clk,
 	output reg [WIDTH-1:0] out
 );//this will use 5 depth inverter chains because why not

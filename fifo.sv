@@ -1,4 +1,5 @@
-module fifo #(parameter WIDTH, parameter DEPTH)( //this is first word fall through
+
+module fifo #(parameter WIDTH, parameter DEPTH=512)( //this is first word fall through
     input clk,
 	input srst,
     input [WIDTH-1:0] din,

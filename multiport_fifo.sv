@@ -14,7 +14,7 @@ module fifo #(parameter WIDTH, parameter DEPTH, parameter READ_PORTS=1, paramete
     output logic full,
     output logic empty,
     output logic valid,
-    output logic [$clog2(DEPTH)-1:0] data_count,
+    output logic [$clog2(DEPTH)-1:0] data_count
 );
 	//pulling is how many values are going to be read this clock cycle, the count of all the 1s in rd_en
 	//this function returns 
