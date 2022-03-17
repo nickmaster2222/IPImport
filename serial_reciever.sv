@@ -62,13 +62,13 @@ module serial_reciever #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPTH=5
         case(current_state)
             START_INCOMING: begin
                 data_pos <= 0;
-                if(RX_count == count_for_baud) begin //to decrease possible false positives, maybe remove
-                    clock_count <= 0;
+                if(RX_count == count_for_baud) begin	//to decrease possible false positives/decrease their impact, maybe remove or change since on a really noisy/ringing line this won't work properly as if the noise makes it go below the detection voltage too often for too long this will make the predicted clock be too different from the actual
+														//I could do something similar to what I do below and have a shifting window where if the average goes below .5 I count that as a falling clock edge with some logic to determine when exactly that happened, that part will be hard and doing this without excessive logic/memory usage will be hard
+					clock_count <= 0;
                     current_state <= DATA_INCOMING;
                     RX_count <= 0;
                 end else if(!RX) begin //start bit detection to sync clock for rest of byte
                     RX_count <= RX_count + 1;
-                end
             end
             DATA_INCOMING: begin
                 if(clock_count == count_for_baud) begin
@@ -76,7 +76,7 @@ module serial_reciever #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPTH=5
 
                     if(data_pos == 7) begin //end of data reached
                         current_state <= STOP_INCOMING;
-                        rx_average <= 0;
+                        rx_average <= 0;//should help with ringing as it's measuring the average voltage instead of the voltage at one point in time
                         data_pos <= 0;
                         din <= {rx_average > count_for_baud / 2 ? 1 : 0, shift_reg[7:1]}; //shifts by one in proccess
                         wr_en <= 1;
