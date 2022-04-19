@@ -56,10 +56,10 @@ module serial_transmitter #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPT
 
 
 
-    logic [15:0] clock_count = count_for_baud; //internal count to clock divide for proper baud rate
-    logic [7:0] shift_reg = 0;
+    reg [15:0] clock_count = count_for_baud; //internal count to clock divide for proper baud rate
+    reg [7:0] shift_reg = 0;
 
-    logic [2:0] shift_pos = 0;
+    reg [2:0] shift_pos = 0;
 
 
 

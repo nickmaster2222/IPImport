@@ -5,11 +5,11 @@ module fifo #(parameter WIDTH, parameter DEPTH=512)( //this is first word fall t
     input [WIDTH-1:0] din,
     input wr_en,
     input rd_en,
-    output logic [WIDTH-1:0] dout=0,
-    output logic full,
-    output logic empty,
-    output logic valid,
-    output logic [$clog2(DEPTH)-1:0] data_count
+    output reg [WIDTH-1:0] dout=0,
+    output full,
+    output empty,
+    output valid,
+    output [$clog2(DEPTH)-1:0] data_count
 );
 	parameter BITS = $clog2(DEPTH) - 1;
 	reg [WIDTH-1:0] ram [DEPTH-1: 0];
