@@ -1,6 +1,6 @@
 //32 bit posit
 import imports::*;
-//IEEE 754 FP32
+
 typedef struct {
 	reg sign,
 	reg [7:0] exponent,//exponent in value is this -127, giving a range of -127, 127
