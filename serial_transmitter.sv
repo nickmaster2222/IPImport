@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 `include "fifo.sv";
-module serial_transmitter #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPTH=512)( //no in built FIFO as of yet
+module serial_transmitter #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPTH=512)(
     input clk,
     output reg TX,
     input wr_en, //is there new data on this clock edge
