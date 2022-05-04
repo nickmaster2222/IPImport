@@ -1,3 +1,5 @@
+//UNTESTED
+
 //includes a register so that this can be used anywhere a register would've been used to assist in timing-closure for pipelined designs
 module skid_buf #(parameter WIDTH)(//FSM might be a better approach here
     input clk,
