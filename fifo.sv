@@ -1,5 +1,4 @@
-
-module fifo #(parameter WIDTH, parameter DEPTH=512)( //this is first word fall through
+module fifo #(parameter WIDTH=8, parameter DEPTH=512)( //this is first word fall through
     input clk,
 	input srst,
     input [WIDTH-1:0] din,
@@ -31,12 +30,12 @@ module fifo #(parameter WIDTH, parameter DEPTH=512)( //this is first word fall t
 				data_count <= data_count + 1;
 			else
 				data_count <= data_count;
-		else 
+		end else 
 			data_count <= data_count;
 	end
 	
 	//writing logic
-	always_ff @(posedge clk) begin
+	always @(posedge clk) begin
 		if(srst)
 			write <= 0;
 		else if(wr_en && !full) begin
@@ -47,7 +46,7 @@ module fifo #(parameter WIDTH, parameter DEPTH=512)( //this is first word fall t
 	end
 	
 	//reading logic
-	always_ff @(posedge clk) begin
+	always @(posedge clk) begin
 		if(srst) begin
 			read <= 0;
 			dout <= '0;

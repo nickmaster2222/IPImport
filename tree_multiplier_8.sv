@@ -1,6 +1,6 @@
 `timescale 1 ns/10 ps
 //change to being sequential?
-//unoptimized at the moment as I'm using all 8 bit adders
+//unoptimized at the moment as I'm using all 8 bit adders, should convert this to a Wallace or Dadda multiplier
 module tree_multiplier_8 (//the leftmost 8 bits from the multiplication are lost
     input wire clk,
 	input wire srst,

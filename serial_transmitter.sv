@@ -63,7 +63,7 @@ module serial_transmitter #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPT
 
 
 
-    always_ff @(posedge clk) begin
+    always @(posedge clk) begin
         case(current_state)
             WAITING: begin //send out a flag when it goes into waiting mode to see if this is duplicating characters
                 TX <= 1;

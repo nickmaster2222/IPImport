@@ -35,7 +35,7 @@ module serial_reciever #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPTH=5
     
     reg srst = 0; //I don't use reset at the moment
     reg wr_en = 0;
-    u8 din = 0;
+    reg [7:0] din = 0;
     wire valid;
     fifo #(8, DEPTH) uart_fifo(
         .clk,
@@ -50,15 +50,14 @@ module serial_reciever #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPTH=5
         .data_count
     );
 
-    u16 clock_count = 0; //internal count to clock divide for proper baud rate and extra bit so it can be signed
-    u8 shift_reg = 0;
-    u3 data_pos = 0;
-    u16 RX_count = 0;//will hace to go up to half of count_for_baud
-    u32 rx_average = 0;
+    reg [15:0] clock_count = 0; //internal count to clock divide for proper baud rate and extra bit so it can be signed
+    reg [7:0] shift_reg = 0;
+    reg [2:0] data_pos = 0;
+    reg [15:0] RX_count = 0;//will hace to go up to half of count_for_baud
+    reg [31:0] rx_average = 0;
 
     enum {START_INCOMING='b001, DATA_INCOMING='b010, STOP_INCOMING='b100} current_state = START_INCOMING;
-    always_ff @(posedge clk) begin
-        //clock_count = clock_count + 1;
+    always @(posedge clk) begin
         case(current_state)
             START_INCOMING: begin
                 data_pos <= 0;
@@ -69,21 +68,23 @@ module serial_reciever #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPTH=5
                     RX_count <= 0;
                 end else if(!RX) begin //start bit detection to sync clock for rest of byte
                     RX_count <= RX_count + 1;
-            end
+					current_state <= START_INCOMING;
+				end
             DATA_INCOMING: begin
                 if(clock_count == count_for_baud) begin
                     clock_count <= 0;
-
                     if(data_pos == 7) begin //end of data reached
-                        current_state <= STOP_INCOMING;
                         rx_average <= 0;//should help with ringing as it's measuring the average voltage instead of the voltage at one point in time
                         data_pos <= 0;
                         din <= {rx_average > count_for_baud / 2 ? 1 : 0, shift_reg[7:1]}; //shifts by one in proccess
                         wr_en <= 1;
+						current_state <= STOP_INCOMING;
                     end else begin
                         rx_average <= 0;
                         shift_reg <= {rx_average > count_for_baud / 2 ? 1 : 0, shift_reg[7:1]};
                         data_pos <= data_pos + 1;
+						current_state <= DATA_INCOMING;
+						wr_en <= 0;
                     end
                 end else begin
                     clock_count <= clock_count + 1;
@@ -93,14 +94,18 @@ module serial_reciever #(parameter CLK_IN=0, parameter BAUD=0, parameter DEPTH=5
             STOP_INCOMING: begin
                 wr_en <= 0;
                 din <= 0;
-                if(RX)
-                    current_state <= START_INCOMING; //only needed for falling edge detection purposes in START_INCOMING
+                if(RX)//if already positive we don't need to wait
+                    current_state <= START_INCOMING;
                 shift_reg <= 0;
             end
-            default: begin
+			default: begin
                 current_state <= START_INCOMING;
                 din <= 0;
                 shift_reg <= 0;
+				clock_count <= 0;
+				data_pos <= 0;
+				wr_en <= 0;
+				rx_average <= 0;
             end
         endcase
     end
