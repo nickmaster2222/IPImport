@@ -4,6 +4,8 @@
 //can be reconfigured at runtime though the actual memory buffer is fixed so the maximum size is decided by that
 //there is also the 1024 x 1024 maximum imposed by the address bit sizes but I think that's ok for an FPGA
 //srst MUST be held high for width * height clock cycles for a full clear
+//default timings can be found at http://tinyvga.com/vga-timing/640x480@60Hz
+//for faster performance I should make a version with most of the config parameterized so the synthesis tools can optimize for them being static
 module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 	input clk,
 	input srst,
@@ -11,7 +13,7 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 	input [9:0] height,
 	input [9:0] width,
 	input [2:0] clear,		//clear color
-	input [7:0] h_config [2:0],	//8 bits for front porch, sync pulse, and back porch, all in pixels
+	input [7:0] h_config [2:0],	//8 bits for front porch, sync pulse, and back porch, all in pixel counts
 	input [7:0] v_config [2:0],	//the same but for vertical
 	input [9:0] X,
 	input [9:0] Y,
@@ -31,6 +33,8 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 	reg [10:0] x_pos;
 	reg [10:0] y_pos;
 	reg reseted;
+	assign hsync = !(x_pos >= width + h_config[0] && x_pos <= width + h_config[0] + h_config[1])
+	assign vsync = !(y_pos >= height + v_config[0] && y_pos <= height + v_config[0] + v_config[1])
 	//need to account for blanking areas
 	always @(posedge vclk) begin
         if(srst) begin//this outputs the clear color and clears vram
@@ -43,16 +47,19 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
             if(reseted) begin
                 x_pos <= 0;
 				y_pos <= 0;
-            end
-			if(x_pos < width - 1 && y_pos < height - 1) begin
+				reseted <= 0;
+				RGB <= 0;
+            end else if(x_pos < width - 1 && y_pos < height - 1) begin//whether we're in the visible area
                 RGB <= vram[y_pos][x_pos];
             end else begin
                 RGB <= 0;
-				hsync <= x_pos >= width + h_config[0] && x_pos <= width + h_config[0] + h_config[1];
-				if(x_pos == width + h_config[0] + h_config[1] + h_config[2]) begin
+				if(x_pos == width + h_config[0] + h_config[1] + h_config[2] - 1) begin
 					x_pos <= 0;
-					y_pos <= y_pos + 1;
-				end
+					y_pos <= y_pos == height + v_config[0] + v_config[1] + v_config[2] - 1 ? 0 : y_pos + 1;
+				end else begin
+                    x_pos <= x_pos + 1;
+					y_pos <= y_pos;
+                end
             end
         end
     end
