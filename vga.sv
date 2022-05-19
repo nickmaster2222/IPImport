@@ -33,8 +33,8 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 	reg [10:0] x_pos;
 	reg [10:0] y_pos;
 	reg reseted;
-	assign hsync = !(x_pos >= width + h_config[0] && x_pos <= width + h_config[0] + h_config[1])
-	assign vsync = !(y_pos >= height + v_config[0] && y_pos <= height + v_config[0] + v_config[1])
+	assign hsync = !(x_pos >= width + h_config[0] && x_pos < width + h_config[0] + h_config[1])
+	assign vsync = !(y_pos >= height + v_config[0] && y_pos < height + v_config[0] + v_config[1])
 	//need to account for blanking areas
 	always @(posedge vclk) begin
         if(srst) begin//this outputs the clear color and clears vram
