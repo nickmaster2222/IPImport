@@ -11,8 +11,8 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 	input clk,
 	input srst,
 	input vclk,	//25.175 MHz video master clock for default 640 x 480 @60 Hz
-	input [9:0] height,
 	input [9:0] width,
+	input [9:0] height,
 	input [2:0] clear,		//clear color
 	input [7:0] h_config [2:0],	//8 bits for front porch, sync pulse, and back porch, all in pixel counts
 	input [7:0] v_config [2:0],	//the same but for vertical
@@ -21,8 +21,8 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 	input [2:0] pixel,
 	output vsync,
 	output hsync,
-	output frame_end, //end of the visible area for this frame
-	output frame_start,
+	output frame_start, //end of the visible area for this frame
+	output frame_end,
 	output visible,	//if false pixels can be written without tearing as long as it's completed before this goes true
 	output reg [2:0] RGB
 );
@@ -33,8 +33,8 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 	reg [20:0] read_pos;// equal to y_pos * width + x_pos but not quite since I don't add to it when not in the visible area
 	assign hsync = !(x_pos >= width + h_config[0] && x_pos < width + h_config[0] + h_config[1]);
 	assign vsync = !(y_pos >= height + v_config[0] && y_pos < height + v_config[0] + v_config[1]);
-	assign visible = x_pos < width - 1 && y_pos < height - 1;
-	assign frame_end = x_pos == width - 1 && y_pos == height - 1;
+	assign visible = x_pos < width && y_pos < height;
+	assign frame_end = x_pos == width && y_pos == height - 1;//signals once the frame is completely over
 	assign frame_start = x_pos == 0 && y_pos == 0;
 	reg [2:0] reading;//used for bram infering hopefully
 	
@@ -51,7 +51,7 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 			read_pos <= 0;
 			reading <= vram[0];
         end else begin 
-			if(x_pos < width - 1 && y_pos < height - 1) begin//whether we're in the visible area
+			if(x_pos < width && y_pos < height) begin//whether we're in the visible area
                 reading <= vram[read_pos];
 				RGB <= reading;//need a delay on the read for proper bram infering
 				x_pos <= x_pos + 1;
