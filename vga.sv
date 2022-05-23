@@ -28,8 +28,8 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 	reg [9:0] y_pos;//bit width could also be changed I think
 	reg [19:0] read_pos;// equal to y_pos * width + x_pos but not quite since I don't add to it when not in the visible area
 	assign req_addr = read_pos;
-	assign hsync = !(x_pos >= width + h_config[0] && x_pos < width + h_config[0] + h_config[1]);
-	assign vsync = !(y_pos >= height + v_config[0] && y_pos < height + v_config[0] + v_config[1]);
+	assign hsync = !((x_pos >= width + h_config[0]) && (x_pos < width + h_config[0] + h_config[1]));
+	assign vsync = !((y_pos >= height + v_config[0]) && (y_pos < height + v_config[0] + v_config[1]));
 	assign visible = x_pos < width && y_pos < height;
 	assign frame_end = x_pos == width && y_pos == height - 1;//signals once the frame is completely over
 	assign frame_start = x_pos == 0 && y_pos == 0;
@@ -51,16 +51,16 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 					if(y_pos == height + v_config[0] + v_config[1] + v_config[2] - 1) begin	//next frame
 						y_pos <= 0;
 						read_pos <= 0;
-						RGB <= pixel;
+						RGB <= '0;
 					end else begin	//next scanline
                         y_pos <= y_pos + 1;
 						read_pos <= read_pos + 1;
-						RGB <= pixel;
+						RGB <= '0;
                     end
-				end else begin//off of the visible area
+				end else begin//off of the visible area but not at the edge
                     x_pos <= x_pos + 1;
 					y_pos <= y_pos;
-					RGB <= 0';
+					RGB <= '0;
                 end
             end
         end
