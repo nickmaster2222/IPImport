@@ -35,7 +35,7 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 	assign frame_start = x_pos == 0 && y_pos == 0;
 	
 	always @(posedge vclk) begin
-        if(srst) begin//this outputs the clear color while held and resets vars but doesn't clear vram
+        if(srst) begin//this outputs the clear color while held and resets vars but the user will have to reset vram if they want that
 			RGB <= clear;
             x_pos <= 0;
 			y_pos <= 0;
@@ -46,21 +46,21 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 				read_pos <= read_pos + 1;//only add to it while in the visible area
 				RGB <= pixel;
             end else begin
-                RGB <= '0;
-				if(x_pos == width + h_config[0] + h_config[1] + h_config[2] - 1) begin
+				if(x_pos == width + h_config[0] + h_config[1] + h_config[2] - 1) begin//either next scanline or next frame
 					x_pos <= 0;
-					if(y_pos == height + v_config[0] + v_config[1] + v_config[2] - 1) begin
+					if(y_pos == height + v_config[0] + v_config[1] + v_config[2] - 1) begin	//next frame
 						y_pos <= 0;
 						read_pos <= 0;
 						RGB <= pixel;
-					end else begin
+					end else begin	//next scanline
                         y_pos <= y_pos + 1;
 						read_pos <= read_pos + 1;
 						RGB <= pixel;
                     end
-				end else begin
+				end else begin//off of the visible area
                     x_pos <= x_pos + 1;
 					y_pos <= y_pos;
+					RGB <= 0';
                 end
             end
         end
