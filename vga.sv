@@ -6,16 +6,16 @@
 //for faster performance I should make a version with most of the config parameterized so the synthesis tools can optimize for them being static
 //for better performance and area usage I should figure out how to remove the multiplies 
 //this doesn't have an internal fram buffer, instead it sends memory requests to an external one and is always requesting
-module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
+module vga #(BUF_WIDTH=640, BUF_HEIGHT=480, BIT_DEPTH=8) (
 	input clk,
 	input srst,
 	input vclk,	//25.175 MHz video master clock for default 640 x 480 @60 Hz
 	input [9:0] width,
 	input [9:0] height,
-	input [2:0] clear,		//clear color
+	input [BIT_DEPTH-1:0] clear,		//clear color
 	input [7:0] h_config [2:0],	//8 bits for front porch, sync pulse, and back porch, all in pixel counts
 	input [7:0] v_config [2:0],	//the same but for vertical
-	input [2:0] pixel,			//pixel request result
+	input [BIT_DEPTH-1:0] pixel,			//pixel request result
 	output [19:0] req_addr,	//pixel address request
 	output vsync,
 	output hsync,
@@ -41,7 +41,8 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 			y_pos <= 0;
 			read_pos <= 0;
         end else begin 
-			if(x_pos < width && y_pos < height) begin//whether we're in the visible area
+			//the <= is to attempt to fix the issue, I need to make sure that the prefetch that happens because of that isn't an issue
+			if(x_pos <= width && y_pos < height) begin//whether we're in the visible area
 				x_pos <= x_pos + 1;
 				read_pos <= read_pos + 1;//only add to it while in the visible area
 				RGB <= pixel;
@@ -54,7 +55,7 @@ module vga #(BUF_WIDTH=640, BUF_HEIGHT=480) (
 						RGB <= '0;
 					end else begin	//next scanline
                         y_pos <= y_pos + 1;
-						read_pos <= read_pos + 1;
+						//read_pos <= read_pos + 1;
 						RGB <= '0;
                     end
 				end else begin//off of the visible area but not at the edge
